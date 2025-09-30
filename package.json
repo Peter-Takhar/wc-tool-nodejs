@@ -1,0 +1,6 @@
+{
+    "name": "wc-tool",
+    "exports": {
+        ".": "./wc.js"
+    }
+}
