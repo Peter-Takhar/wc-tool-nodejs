@@ -21,10 +21,20 @@ if (fileName == null) {
 console.log(`You have inputted this file name: ${fileName}`);
 
 
-fs.readFile(fileName, 'utf8', (err,data) => {
+fs.readFile(fileName, 'utf8', (err, data) => {
     if (err) throw err;
     
     const blob = new Blob([data]);
-    console.log(`${blob.size} ${fileName}`);
+
+    let lines = data.split(/\r\n/g);
+    // let maximumLineLength = 0;
+    // lines.forEach(str => { if (str.length > maximumLineLength) { maximumLineLength = str.length } });
+    let maximumLineLength = lines.reduce((acc, curr) => curr.length > acc ? curr.length : acc, 0);
+    let words = lines.filter(line => line.length > 0).flatMap(str => str.split(" ")).filter(word => word.length > 0);
+    console.log(words);
+     
+    let charCount = data.split("").reduce((acc, curr) => acc + curr.length, 0);
+    
+    console.log(`${lines.length} ${words.length} ${charCount} ${blob.size} ${maximumLineLength} ${fileName}`);
 });
 
