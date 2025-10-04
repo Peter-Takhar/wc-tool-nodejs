@@ -2,12 +2,10 @@
 //      with no FILE, or when FILE is -, read standard input
 //      always in this word: newline, word, character, byte, maximum line length
 
-
 const { argv } = require("node:process");
 const fs = require("node:fs");
 
 let fileName = null;
-
 
 //re-write to process command line statements
 argv.forEach((val, index) => {
@@ -27,14 +25,16 @@ fs.readFile(fileName, 'utf8', (err, data) => {
     const blob = new Blob([data]);
 
     let lines = data.split(/\r\n/g);
-    // let maximumLineLength = 0;
-    // lines.forEach(str => { if (str.length > maximumLineLength) { maximumLineLength = str.length } });
     let maximumLineLength = lines.reduce((acc, curr) => curr.length > acc ? curr.length : acc, 0);
-    let words = lines.filter(line => line.length > 0).flatMap(str => str.split(" ")).filter(word => word.length > 0);
-    console.log(words);
+    
+    //tabs and empty space can seperate sequence of nonwhite space characters
+    let words = lines.filter(line => line.match(/\S+/g)).flatMap(str => str.split(" ")).flatMap(str => str.split(/\t/)).filter(word => word.match(/\S+/g));
      
     let charCount = data.split("").reduce((acc, curr) => acc + curr.length, 0);
-    
-    console.log(`${lines.length} ${words.length} ${charCount} ${blob.size} ${maximumLineLength} ${fileName}`);
+    //POSIX def of a line is a sequence of characters that end in a new line
+    //edge case, it is unnecessary to add an extra byte to the last line for newline but its an oddity
+    console.log(`${lines.length-1} ${words.length} ${charCount} ${blob.size} ${maximumLineLength} ${fileName}`);
 });
+
+
 
