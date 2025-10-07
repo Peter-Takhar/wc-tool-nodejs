@@ -55,28 +55,39 @@ if (fileName == '-') {
     let linesCount = 0;
     let wordsCount = 0;
     let byteCount = 0;
+    let maximumLineLength = 0;
+    let characterCount = 0;
     rl.on('line', (input) => {
         linesCount++;
-        wordsCount += input.split(/[\s+]/).length;
-        byteCount += new Blob([input]).size;
-        console.log(`Received: ${input}`);
+        maximumLineLength = input.length > maximumLineLength ? input.length : maximumLineLength;
+        wordsCount += input.split(/[\s+]/).filter(str => str.length > 0).length;
+        characterCount += input.length;
+        byteCount += new Blob([input]).size + 1;
         //does not count words or bytes on last line without newline
     });
 
     //there is no EOF signal, using SIGINT instead to handle end of input
     //trying to build output in previous
+    //EOF is different from how stdin is handled
     rl.on('SIGINT', () => {
-        //rl.line? process whats left the line
-        //looks like even though im trying to treat it like a file, stdin doesn't work that way
-        //different model
-        console.log(`${linesCount} ${wordsCount} ${byteCount} ${fileName}`);
+        let lastLine = rl.line;
+        console.log(lastLine.split(/[\S+]/));
+        wordsCount += lastLine.split(/[\s+]/).filter(str => str.length > 0).length;
+        byteCount += new Blob([lastLine]).size;
+        characterCount += lastLine.length;
+
+        let output = '';
+        if (!newLineFlag && !wordsFlag && !charsFlag && !bytesFlag && !maxLinesFlag) output += `${linesCount} ${wordsCount} ${byteCount} `;
+        if (newLineFlag) output += linesCount + " ";
+        if (wordsFlag) output += wordsCount + " ";
+        if (charsFlag) output += characterCount + " ";
+        if (bytesFlag) output += byteCount + " ";
+        if (maxLinesFlag) output += maximumLineLength + " ";
+
+        console.log(`${output}`);
         rl.close();
     })
-    // rl.question('', (answer) => {
-    //     console.log(`Answer: ${answer}`);
-    // });
 
-    // rl.close();
 } else {
     fs.readFile(fileName, 'utf8', (err, data) => {
         if (err) throw err;
